@@ -1,7 +1,6 @@
 # WorldSmith project page — night carnival edition
 
 Static site, no build step, no external requests (fonts are self-hosted in `assets/fonts`).
-The earlier neutral version is in this repo's history (commit 34c6242).
 
 ```
 index.html              page structure and all text
