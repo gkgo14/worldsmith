@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>WorldSmith: Unified Agentic 3D and 4D Content Creation</title>
+<meta name="description" content="WorldSmith: one vision-language agent that writes Blender programs, calls specialist tools and checks its own renders to edit assets, write emission, rig and animate assets, and build 3D and 4D scenes.">
+<meta property="og:title" content="WorldSmith: Unified Agentic 3D and 4D Content Creation">
+<meta property="og:description" content="One agent, infinite worlds. Edit, emit, animate and compose 3D/4D content through executable Blender programs and visual feedback.">
+<meta property="og:image" content="assets/video/reel.jpg">
+<meta name="theme-color" content="#0e0c20">
+<link rel="preload" href="assets/fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/figtree.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff8a45'/%3E%3Cpath d='M7 12h18l-3 4h-4v5h4v3H10v-3h4v-5h-4z' fill='%230e0c20'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<nav class="nav" aria-label="Sections">
+  <div class="wrap">
+    <a class="brand" href="#top">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ember)"/><path d="M7 12h18l-3 4h-4v5h4v3H10v-3h4v-5h-4z" fill="var(--night-0)"/></svg>
+      WorldSmith
+    </a>
+    <div class="nav-links">
+      <a href="#loop">The Loop</a>
+      <a href="#tasks" class="keep">Attractions</a>
+      <a href="#bibtex">BibTeX</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero" id="top">
+  <canvas id="sky" aria-hidden="true"></canvas>
+  <div class="hero-wheel" id="heroWheel" aria-hidden="true"></div>
+  <div class="lights" data-lights aria-hidden="true"></div>
+
+  <div class="wrap hero-in">
+    <p class="eyebrow"><span class="dot"></span>the carnival is open all night</p>
+    <h1 class="title">World<span class="smith">Smith</span></h1>
+    <p class="subtitle">Unified Agentic 3D and 4D Content Creation</p>
+    <p class="tagline">One agent, infinite worlds.</p>
+
+    <div class="btns">
+      <!-- TODO: replace href="#" and drop class "soon" (and the .tag span) once each link is live -->
+      <a class="btn primary soon" href="#" aria-disabled="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>
+        Paper <span class="tag">soon</span></a>
+      <a class="btn soon" href="#" aria-disabled="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l16 16M20 4L4 20"/></svg>
+        arXiv <span class="tag">soon</span></a>
+      <a class="btn soon" href="#" aria-disabled="true">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.39-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+        Code <span class="tag">soon</span></a>
+    </div>
+    <p class="sky-hint" id="skyHint">psst… click the sky</p>
+  </div>
+
+  <div class="wrap">
+    <div class="reel" id="reel" data-bulbs>
+      <div class="player" id="player" tabindex="-1">
+        <div class="reel-screen">
+          <video id="reelVideo" src="assets/video/reel.mp4" poster="assets/video/reel.jpg" autoplay muted loop playsinline preload="metadata" aria-label="WorldSmith overview reel"></video>
+        </div>
+        <div class="pc" id="pc">
+          <div class="scrub" id="scrub">
+            <div class="scrub-segs" id="scrubSegs"></div>
+            <div class="scrub-buf" id="scrubBuf"></div>
+            <div class="scrub-fill" id="scrubFill"></div>
+            <div class="scrub-tip" id="scrubTip" hidden></div>
+            <input type="range" id="scrubIn" min="0" max="1000" step="1" value="0" aria-label="Seek">
+          </div>
+          <div class="pc-row">
+            <button class="pc-b" id="pcPlay" aria-label="Pause"></button>
+            <span class="pc-time"><span id="pcCur">0:00</span> / <span id="pcDur">1:08</span></span>
+            <span class="pc-chap" id="pcChap"></span>
+            <span class="pc-gap"></span>
+            <div class="pc-vol">
+              <button class="pc-b" id="pcMute" aria-label="Unmute"></button>
+              <input type="range" id="pcVol" min="0" max="1" step="0.05" value="0" aria-label="Volume">
+            </div>
+            <div class="pc-menu">
+              <button class="pc-b pc-txt" id="pcRate" aria-label="Playback speed" aria-haspopup="true" aria-expanded="false">1×</button>
+              <div class="pc-pop" id="pcRates" hidden>
+                <button data-r="0.5">0.5×</button><button data-r="0.75">0.75×</button><button data-r="1" class="on">1×</button><button data-r="1.25">1.25×</button><button data-r="1.5">1.5×</button><button data-r="2">2×</button>
+              </div>
+            </div>
+            <button class="pc-b" id="pcPip" aria-label="Picture in picture" hidden></button>
+            <a class="pc-b" id="pcDl" href="assets/video/reel.mp4" download="worldsmith_demo.mp4" aria-label="Download video"></a>
+            <button class="pc-b" id="pcFs" aria-label="Full screen"></button>
+          </div>
+        </div>
+      </div>
+      <div class="reel-bar" role="group" aria-label="Reel chapters">
+        <button class="chap" style="--c:var(--c-edit)" data-s="0" data-e="26.2">Edit<span class="p"></span></button>
+        <button class="chap" style="--c:var(--c-emit)" data-s="26.2" data-e="35.5">Emit<span class="p"></span></button>
+        <button class="chap" style="--c:var(--c-anim)" data-s="35.5" data-e="41.4">Animate<span class="p"></span></button>
+        <button class="chap" style="--c:var(--c-s3d)" data-s="41.4" data-e="53.9">Compose<span class="p"></span></button>
+        <button class="chap" style="--c:var(--c-s4d)" data-s="53.9" data-e="68.1">Alive<span class="p"></span></button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ TICKETS (headline numbers) ============ -->
+<section class="tickets-sec">
+  <div class="wrap">
+    <p class="kicker center">Five rides. One agent runs them all.</p>
+    <div class="tickets">
+      <a class="ticket rv" href="#ride-edit" style="--c:var(--c-edit);--tilt:-2.2deg"><span class="t-top"><b>01</b> admit one</span><span class="t-task">3D editing</span><span class="t-num">0.638<small>IF</small></span><span class="t-vs">EditHero · next best <s>0.410</s></span></a>
+      <a class="ticket rv" href="#ride-emit" style="--c:var(--c-emit);--tilt:1.4deg"><span class="t-top"><b>02</b> admit one</span><span class="t-task">Emission</span><span class="t-num">0.339<small>IoU</small></span><span class="t-vs">LightGenBench · next best <s>0.271</s></span></a>
+      <a class="ticket rv" href="#ride-anim" style="--c:var(--c-anim);--tilt:-1deg"><span class="t-top"><b>03</b> admit one</span><span class="t-task">Animation</span><span class="t-num">0.118<small>CD ↓</small></span><span class="t-vs">Motion-80 · next best <s>0.208</s></span></a>
+      <a class="ticket rv" href="#ride-s3d" style="--c:var(--c-s3d);--tilt:2deg"><span class="t-top"><b>04</b> admit one</span><span class="t-task">3D scenes</span><span class="t-num">0.459<small>Obj-IoU</small></span><span class="t-vs">CompoScene-3D · next best <s>0.399</s></span></a>
+      <a class="ticket rv" href="#ride-s4d" style="--c:var(--c-s4d);--tilt:-1.6deg"><span class="t-top"><b>05</b> admit one</span><span class="t-task">4D scenes</span><span class="t-num">0.340<small>Obj-IoU</small></span><span class="t-vs">CompoScene-4D · next best <s>0.152</s></span></a>
+    </div>
+
+    <figure class="paper-fig sk rv" id="teaser" style="--c:var(--lamp)">
+      <span class="sk-tab">The whole night carnival, made by one agent</span>
+      <img class="zoomable" src="assets/img/teaser.jpg" width="2400" height="1376" loading="lazy" alt="WorldSmith results: multi-turn editing, a night-carnival 3D scene, a rigged and animated character, surface emission on six assets, and four frames of the carnival brought to life as a 4D scene">
+    </figure>
+  </div>
+</section>
+
+<!-- ============ LOOP ============ -->
+<section id="loop" class="band">
+  <div class="lights small" data-lights aria-hidden="true"></div>
+  <div class="wrap">
+    <p class="kicker">How the wheel turns</p>
+    <h2 class="h2">Write code. Render. Look. Revise.</h2>
+    <p class="lede">One vision-language agent writes Blender code, renders the result and revises until it matches the goal. No task-specific training.</p>
+
+    <div class="loop-grid rv" id="loopWheel">
+      <div class="lw" aria-hidden="true">
+        <div class="lw-rim">
+          <svg viewBox="0 0 400 400">
+            <circle cx="200" cy="200" r="150" class="lw-ring"/>
+            <circle cx="200" cy="200" r="128" class="lw-ring thin"/>
+            <g class="lw-spokes"></g>
+            <g class="lw-dots"></g>
+          </svg>
+        </div>
+        <svg class="lw-legs" viewBox="0 0 400 400"><path d="M200 200L120 392M200 200L280 392M96 392h208"/></svg>
+        <div class="lw-hub"><svg viewBox="0 0 32 32"><path d="M7 12h18l-3 4h-4v5h4v3H10v-3h4v-5h-4z"/></svg></div>
+        <div class="lw-cab" style="--i:0"><span>write</span></div>
+        <div class="lw-cab" style="--i:1"><span>run</span></div>
+        <div class="lw-cab" style="--i:2"><span>look</span></div>
+        <div class="lw-cab" style="--i:3"><span>revise</span></div>
+      </div>
+      <ol class="lw-steps">
+        <li><button class="lw-step" data-i="0"><b>Write</b><span>The agent writes a Blender program and calls specialist tools.</span></button></li>
+        <li><button class="lw-step" data-i="1"><b>Run</b><span>The program executes in Blender.</span></button></li>
+        <li><button class="lw-step" data-i="2"><b>Look</b><span>It renders the result and inspects its own renders.</span></button></li>
+        <li><button class="lw-step" data-i="3"><b>Revise</b><span>Whatever misses the goal gets fixed. Then round again.</span></button></li>
+      </ol>
+    </div>
+
+    <figure class="paper-fig sk rv" style="--c:var(--c-edit)">
+      <span class="sk-tab">Method overview</span>
+      <img class="zoomable" src="assets/img/pipeline.jpg" width="2400" height="1380" loading="lazy" alt="Method overview: a shared agent loop (VLM agent writes code and tool calls, executes in Blender, renders and inspects, revises) drives asset creation (3D editing, rig-based animation, surface emission) and scene creation (3D scenes, 4D scenes that reuse the animation agent)">
+    </figure>
+
+    <div class="harness">
+      <div class="hx sk rv" style="--c:var(--c-edit)"><span class="sk-tab">Editing</span><h4>Track open issues</h4><p>Fix the worst issue first; never touch the rest.</p></div>
+      <div class="hx sk rv" style="--c:var(--c-emit)"><span class="sk-tab">Emission</span><h4>Masks on the atlas</h4><p>Glow masks from every view, fused on one texture.</p></div>
+      <div class="hx sk rv" style="--c:var(--c-anim)"><span class="sk-tab">Animation</span><h4>Rig, then animate</h4><p>Auto-rig the mesh, write keyframes, compare candidates blind.</p></div>
+      <div class="hx sk rv" style="--c:var(--c-s3d)"><span class="sk-tab">Scenes</span><h4>Layout first</h4><p>Low-poly proxies first, detailed meshes fitted in after.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ATTRACTIONS ============ -->
+<section id="tasks">
+  <div class="wrap">
+    <p class="kicker">Step right up</p>
+    <h2 class="h2">From a single asset to a living world</h2>
+  </div>
+
+  <div class="map" id="map">
+    <div class="wrap">
+      <div class="map-row" role="group" aria-label="Attractions">
+        <a href="#ride-edit" style="--c:var(--c-edit)"><i>01</i>Editing</a>
+        <a href="#ride-emit" style="--c:var(--c-emit)"><i>02</i>Emission</a>
+        <a href="#ride-anim" style="--c:var(--c-anim)"><i>03</i>Animation</a>
+        <a href="#ride-s3d" style="--c:var(--c-s3d)"><i>04</i>3D scenes</a>
+        <a href="#ride-s4d" style="--c:var(--c-s4d)"><i>05</i>4D scenes</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap rides">
+
+    <!-- ---- 01 EDIT ---- -->
+    <article class="ride sk" id="ride-edit" style="--c:var(--c-edit)">
+      <span class="sk-tab">01 · The Workshop</span>
+      <div class="ride-grid">
+        <div class="ride-text">
+          <h3>3D asset editing</h3>
+          <p class="io">mesh + instruction (+ image) → edited mesh, turn after turn</p>
+          <p>Each turn edits only the selected faces. Everything else stays exactly as it was.</p>
+          <ul class="chain"><li>local face edit</li><li class="sep">→</li><li>issue ledger</li><li class="sep">→</li><li>preserve source</li></ul>
+          <div class="bars" data-bars="edit"></div>
+        </div>
+        <div class="clip-stack">
+          <div class="clip"><video data-src="assets/video/edit_angel.mp4" poster="assets/video/edit_angel.jpg" muted loop playsinline preload="none" aria-label="Four editing turns on a marble angel"></video><span class="stage-label">marble angel · four turns</span></div>
+          <div class="clip"><video data-src="assets/video/edit_miku.mp4" poster="assets/video/edit_miku.jpg" muted loop playsinline preload="none" aria-label="Five editing turns on a figure"></video><span class="stage-label">figure · five turns</span></div>
+        </div>
+      </div>
+      <details class="table"><summary>Full results · EditHero (457 chains, 2,755 edits, self-rollout)</summary>
+        <div class="tscroll"><table>
+          <thead><tr><th>Method</th><th>IF ↑</th><th>CC<sup>prev</sup> ↑</th><th>CC<sup>0</sup> ↑</th><th>F ↑</th><th>IoU ↑</th><th>CD ↓</th><th>LPIPS<sub>E</sub> ↓</th><th>LPIPS<sub>U</sub> ↓</th><th>LPIPS<sub>W</sub> ↓</th><th>PSNR<sub>W</sub> ↑</th><th>Drift<sub>U</sub> ↓</th></tr></thead>
+          <tbody>
+            <tr><td>3DEditFormer</td><td>0.191</td><td>0.783</td><td>0.487</td><td>0.523</td><td>0.411</td><td>3.04</td><td>0.529</td><td>0.200</td><td>0.215</td><td>17.8</td><td>0.0157</td></tr>
+            <tr><td>VoxHammer</td><td>0.32</td><td>0.71</td><td>0.453</td><td>0.52</td><td>0.380</td><td>2.69</td><td>0.521</td><td>0.205</td><td>0.219</td><td>15.2</td><td>0.022</td></tr>
+            <tr><td>PartFlow</td><td>0.118</td><td>0.878</td><td>0.688</td><td>0.647</td><td>0.519</td><td>2.28</td><td>0.529</td><td>0.174</td><td>0.190</td><td>18.1</td><td>0.0128</td></tr>
+            <tr><td>Nano3D</td><td>0.309</td><td>0.890</td><td>0.728</td><td>0.696</td><td>0.581</td><td>2.09</td><td>0.487</td><td>0.154</td><td>0.170</td><td>18.9</td><td>0.0076</td></tr>
+            <tr><td>Alchemy3D</td><td>0.410</td><td>0.680</td><td>0.346</td><td>0.446</td><td>0.348</td><td>4.44</td><td>0.516</td><td>0.218</td><td>0.233</td><td>17.6</td><td>0.0177</td></tr>
+            <tr><td>Codex agent (GPT-6 Astra)</td><td><u>0.619</u></td><td><u>0.981</u></td><td><u>0.920</u></td><td><u>0.832</u></td><td><u>0.806</u></td><td><u>0.80</u></td><td><u>0.222</u></td><td><u>0.054</u></td><td><u>0.062</u></td><td><u>26.9</u></td><td><u>0.0018</u></td></tr>
+            <tr class="ours"><td>WorldSmith</td><td>0.638</td><td>0.982</td><td>0.922</td><td>0.840</td><td>0.814</td><td>0.79</td><td>0.193</td><td>0.048</td><td>0.056</td><td>27.7</td><td>0.0017</td></tr>
+          </tbody></table></div>
+        <p class="tnote">E: edit region, U: unedited region, W: whole object. CD ×100. Underlined: second best.</p>
+      </details>
+    </article>
+
+    <!-- ---- 02 EMISSION ---- -->
+    <article class="ride sk flip" id="ride-emit" style="--c:var(--c-emit)">
+      <span class="sk-tab">02 · Lights On</span>
+      <div class="ride-grid">
+        <div class="ride-text">
+          <h3>Surface emission</h3>
+          <p class="io">mesh + base colour + thumbnail → emission map on the texture atlas</p>
+          <p>The agent finds the parts that should glow and lights them in their own colours.</p>
+          <ul class="chain"><li>multi-view glow masks</li><li class="sep">→</li><li>weighted UV fusion</li></ul>
+          <div class="bars" data-bars="emit"></div>
+        </div>
+        <div class="booth" id="booth">
+          <div class="booth-stage">
+            <img class="e-in" id="emitIn" src="assets/img/emit_lamp_in.jpg" alt="Input asset under studio light" width="300" height="300">
+            <img class="e-out" id="emitOut" src="assets/img/emit_lamp_out.jpg" alt="The same asset in the dark with the emission map written by WorldSmith" width="300" height="300">
+            <span class="stage-label" id="emitLabel">input</span>
+          </div>
+          <button class="switch" id="emitSwitch" role="switch" aria-checked="false" aria-label="Turn the emission on">
+            <span class="sw-track"><span class="sw-knob"></span></span>
+            <span class="sw-text">flip the switch</span>
+          </button>
+          <div class="gal-row" role="group" aria-label="Choose an asset">
+            <button class="gal-btn on" data-a="assets/img/emit_lamp_in.jpg" data-b="assets/img/emit_lamp_out.jpg"><img src="assets/img/emit_lamp_out.jpg" alt=""><span>desk lamp</span></button>
+            <button class="gal-btn" data-a="assets/img/emit_helmet_in.jpg" data-b="assets/img/emit_helmet_out.jpg"><img src="assets/img/emit_helmet_out.jpg" alt="" loading="lazy"><span>helmet</span></button>
+            <button class="gal-btn" data-a="assets/img/emit_mushrooms_in.jpg" data-b="assets/img/emit_mushrooms_out.jpg"><img src="assets/img/emit_mushrooms_out.jpg" alt="" loading="lazy"><span>mushrooms</span></button>
+            <button class="gal-btn" data-a="assets/img/emit_cottage_in.jpg" data-b="assets/img/emit_cottage_out.jpg"><img src="assets/img/emit_cottage_out.jpg" alt="" loading="lazy"><span>cottage</span></button>
+            <button class="gal-btn" data-a="assets/img/emit_bust_in.jpg" data-b="assets/img/emit_bust_out.jpg"><img src="assets/img/emit_bust_out.jpg" alt="" loading="lazy"><span>bust</span></button>
+          </div>
+        </div>
+      </div>
+      <details class="table"><summary>Full results · LightGenBench test split (200 shapes)</summary>
+        <div class="tscroll"><table>
+          <thead><tr><th>Method</th><th>IoU ↑</th><th>MAE ↓</th><th>PSNR ↑</th></tr></thead>
+          <tbody>
+            <tr><td>TEXGen-Emission</td><td>0.092</td><td>0.025</td><td>25.10</td></tr>
+            <tr><td>Hunyuan3D-Emission</td><td>0.117</td><td><u>0.022</u></td><td>26.46</td></tr>
+            <tr><td>SegviGen-Emission</td><td>0.147</td><td>0.041</td><td>24.50</td></tr>
+            <tr><td>TRELLIS.2-Emission</td><td><u>0.271</u></td><td><b>0.021</b></td><td><u>26.81</u></td></tr>
+            <tr class="ours"><td>WorldSmith</td><td>0.339</td><td>0.027</td><td>27.23</td></tr>
+          </tbody></table></div>
+        <p class="tnote">Official evaluator; other methods as reported by LightGenBench.</p>
+      </details>
+    </article>
+
+    <!-- ---- 03 ANIMATION ---- -->
+    <article class="ride sk" id="ride-anim" style="--c:var(--c-anim)">
+      <span class="sk-tab">03 · The Parade</span>
+      <div class="ride-grid">
+        <div class="ride-text">
+          <h3>Rigging and animation</h3>
+          <p class="io">mesh + video → rigged asset with keyframed bone and root motion</p>
+          <p>The agent rigs the mesh, then writes the motion as keyframes, with no motion prior.</p>
+          <ul class="chain"><li>auto-rig</li><li class="sep">→</li><li>motion as code</li><li class="sep">→</li><li>blind A/B review</li></ul>
+          <div class="bars" data-bars="anim"></div>
+        </div>
+        <div class="clip-pair">
+          <div class="clip sq"><video data-src="assets/video/anim_boy.mp4" poster="assets/video/anim_boy.jpg" muted loop playsinline preload="none" aria-label="Rigged character walking and waving"></video><span class="stage-label">character · walk and wave</span></div>
+          <div class="clip sq"><video data-src="assets/video/anim_wheel.mp4" poster="assets/video/anim_wheel.jpg" muted loop playsinline preload="none" aria-label="Rigged Ferris wheel spinning with hinged cabins"></video><span class="stage-label">object · spinning wheel</span></div>
+        </div>
+      </div>
+      <div class="cast" id="cast">
+        <p class="cast-lede">The carnival cast, rigged and animated. <span>Hover one to make it hurry.</span></p>
+        <div class="cast-row">
+          <figure class="puppet" tabindex="0" style="--d:0s"><div class="flip" style="background-image:url(assets/img/cast_bear.jpg)" role="img" aria-label="Six animated frames of the rigged puppy"></div><figcaption>puppy</figcaption></figure>
+          <figure class="puppet" tabindex="0" style="--d:-.3s"><div class="flip" style="background-image:url(assets/img/cast_knight.jpg)" role="img" aria-label="Six animated frames of the rigged viking"></div><figcaption>viking</figcaption></figure>
+          <figure class="puppet" tabindex="0" style="--d:-.6s"><div class="flip" style="background-image:url(assets/img/cast_loaf.jpg)" role="img" aria-label="Six animated frames of the rigged toast"></div><figcaption>toast</figcaption></figure>
+          <figure class="puppet" tabindex="0" style="--d:-.9s"><div class="flip" style="background-image:url(assets/img/cast_ogre.jpg)" role="img" aria-label="Six animated frames of the rigged giant chef"></div><figcaption>giant chef</figcaption></figure>
+          <figure class="puppet" tabindex="0" style="--d:-.2s"><div class="flip" style="background-image:url(assets/img/cast_girl.jpg)" role="img" aria-label="Six animated frames of the rigged girl"></div><figcaption>girl</figcaption></figure>
+          <figure class="puppet" tabindex="0" style="--d:-.5s"><div class="flip" style="background-image:url(assets/img/cast_critter.jpg)" role="img" aria-label="Six animated frames of the rigged rock critter"></div><figcaption>rock critter</figcaption></figure>
+        </div>
+      </div>
+      <details class="table"><summary>Full results · Motion-80 (64 short + 16 long sequences)</summary>
+        <div class="tscroll"><table>
+          <thead><tr><th>Method</th><th>SR (%) ↑</th><th>CD ↓</th><th>F<sub>0.02</sub> ↑</th><th>LPIPS ↓</th><th>CLIP ↑</th><th>FVD ↓</th><th>DreamSim ↓</th></tr></thead>
+          <tbody>
+            <tr><td>CAST†</td><td>100</td><td>0.2679</td><td>0.1792</td><td>0.1816</td><td>0.8651</td><td>1842.35</td><td>0.2008</td></tr>
+            <tr><td>TopoCap</td><td>95</td><td>1.3051</td><td>0.1046</td><td>0.2063</td><td>0.8135</td><td>2337.03</td><td>0.2616</td></tr>
+            <tr><td>MorphGS</td><td>100</td><td><u>0.2080</u></td><td><u>0.2177</u></td><td><u>0.1498</u></td><td><u>0.8842</u></td><td><u>1562.99</u></td><td><u>0.1672</u></td></tr>
+            <tr><td>MoCapAnything V2†</td><td>100</td><td>0.7110</td><td>0.0967</td><td>0.2141</td><td>0.7529</td><td>2530.28</td><td>0.3563</td></tr>
+            <tr class="ours"><td>WorldSmith</td><td>100</td><td>0.1179</td><td>0.3686</td><td>0.1214</td><td>0.9451</td><td>898.77</td><td>0.0883</td></tr>
+          </tbody></table></div>
+        <p class="tnote">To isolate motion quality, the benchmark gives every method the asset's original skeleton and skinning weights, plus the rest mesh and the video. Averaged over short and long sequences. †512-joint input limit.</p>
+      </details>
+    </article>
+
+    <!-- ---- 04 3D SCENE ---- -->
+    <article class="ride sk flip" id="ride-s3d" style="--c:var(--c-s3d)">
+      <span class="sk-tab">04 · The Diorama</span>
+      <div class="ride-grid">
+        <div class="ride-text">
+          <h3>3D scene generation</h3>
+          <p class="io">one image + camera → instance-level objects on the ground plane</p>
+          <p>Layout first with low-poly proxies, then each object is generated and fitted in place.</p>
+          <ul class="chain"><li>low-poly layout</li><li class="sep">→</li><li>generate objects</li><li class="sep">→</li><li>fit &amp; review</li></ul>
+          <div class="bars" data-bars="s3d"></div>
+        </div>
+        <div data-gallery>
+          <div class="wipe sq" data-wipe style="--x:50%">
+            <img data-a src="assets/img/scene_901_in.jpg" alt="Input image" width="508" height="508">
+            <div class="top"><img data-b src="assets/img/scene_901_out.jpg" alt="Scene reconstructed by WorldSmith from the input camera, every object a separate instance" width="508" height="508"></div>
+            <input type="range" min="0" max="100" value="50" aria-label="Compare input image and reconstruction">
+            <div class="handle"></div>
+            <span class="stage-label">input</span><span class="stage-label r">WorldSmith</span>
+          </div>
+          <div class="gal-row" role="group" aria-label="Choose a scene">
+            <button class="gal-btn on" data-a="assets/img/scene_901_in.jpg" data-b="assets/img/scene_901_out.jpg"><img src="assets/img/scene_901_out.jpg" alt=""><span>living room</span></button>
+            <button class="gal-btn" data-a="assets/img/scene_900_in.jpg" data-b="assets/img/scene_900_out.jpg"><img src="assets/img/scene_900_out.jpg" alt="" loading="lazy"><span>lawn</span></button>
+            <button class="gal-btn" data-a="assets/img/scene_902_in.jpg" data-b="assets/img/scene_902_out.jpg"><img src="assets/img/scene_902_out.jpg" alt="" loading="lazy"><span>bike &amp; bench</span></button>
+            <button class="gal-btn" data-a="assets/img/scene_903_in.jpg" data-b="assets/img/scene_903_out.jpg"><img src="assets/img/scene_903_out.jpg" alt="" loading="lazy"><span>piano</span></button>
+            <button class="gal-btn" data-a="assets/img/scene_904_in.jpg" data-b="assets/img/scene_904_out.jpg"><img src="assets/img/scene_904_out.jpg" alt="" loading="lazy"><span>beach</span></button>
+          </div>
+        </div>
+      </div>
+      <details class="table"><summary>Full results · CompoScene-3D (120 scenes, single image)</summary>
+        <div class="tscroll"><table>
+          <thead><tr><th>Method</th><th>Succ.</th><th>Scene AABB ↑</th><th>Scene OBB ↑</th><th>Obj AABB ↑</th><th>Obj OBB ↑</th><th>PL ↓</th><th>N-CLIP ↓</th></tr></thead>
+          <tbody>
+            <tr><td>MIDI-3D</td><td>120</td><td>0.660</td><td>0.458</td><td>0.187</td><td>0.154</td><td>1.99</td><td>1.23</td></tr>
+            <tr><td>SceneGen</td><td>120</td><td>0.557</td><td>0.426</td><td>0.114</td><td>0.094</td><td>3.52</td><td>1.56</td></tr>
+            <tr><td>SceneMaker</td><td>120</td><td>0.569</td><td>0.379</td><td>0.112</td><td>0.092</td><td>3.42</td><td>1.63</td></tr>
+            <tr><td>Mira-Scene</td><td>119</td><td>0.669</td><td>0.449</td><td>0.207</td><td>0.166</td><td>2.37</td><td>1.44</td></tr>
+            <tr><td>OVOW</td><td>113</td><td>0.544</td><td>0.390</td><td>0.151</td><td>0.122</td><td>2.29</td><td>1.33</td></tr>
+            <tr><td>VIGA</td><td>120</td><td>0.643</td><td>0.434</td><td>0.134</td><td>0.101</td><td>2.55</td><td>1.54</td></tr>
+            <tr><td>GPT-6 Astra direct*</td><td>120</td><td><u>0.801</u></td><td><u>0.565</u></td><td><u>0.399</u></td><td><u>0.329</u></td><td><b>1.21</b></td><td><u>1.18</u></td></tr>
+            <tr class="ours"><td>WorldSmith</td><td>120</td><td>0.836</td><td>0.589</td><td>0.459</td><td>0.372</td><td>1.30</td><td>0.83</td></tr>
+          </tbody></table></div>
+        <p class="tnote">Failed scenes count as zero IoU. *Mean of 3 runs; same model as ours, without the framework.</p>
+      </details>
+    </article>
+
+    <!-- ---- 05 4D SCENE ---- -->
+    <article class="ride sk" id="ride-s4d" style="--c:var(--c-s4d)">
+      <span class="sk-tab">05 · The Picture House</span>
+      <div class="ride-grid">
+        <div class="ride-text">
+          <h3>4D scene generation</h3>
+          <p class="io">monocular video + camera → instance-level animated scene</p>
+          <p>The first frame becomes a 3D scene; moving characters are tracked, rigged and animated in place.</p>
+          <ul class="chain"><li>track &amp; auto-rig</li><li class="sep">→</li><li>reuse animation agent</li><li class="sep">→</li><li>assemble &amp; anchor</li></ul>
+          <div class="bars" data-bars="s4d"></div>
+        </div>
+        <div class="films" id="films">
+          <div class="filmstrip">
+            <div class="wipe sq" id="filmWipe" style="--x:50%">
+              <canvas id="filmBase" width="512" height="512" aria-label="Input video"></canvas>
+              <div class="top"><canvas id="filmTop" width="512" height="512" aria-label="WorldSmith 4D scene from the input camera"></canvas></div>
+              <input type="range" min="0" max="100" value="50" aria-label="Compare input video and reconstruction">
+              <div class="handle"></div>
+              <span class="stage-label">input video</span><span class="stage-label r">WorldSmith 4D</span>
+            </div>
+          </div>
+          <p class="films-lede">Animated-film clips. Drag to compare the input with our 4D scene.</p>
+          <div class="film-picker" id="filmPicker" role="group" aria-label="Choose a clip">
+            <button class="film-btn on" data-film="905"><span class="th" style="background-image:url(assets/video/film_905.jpg)"></span>Nursery</button>
+            <button class="film-btn" data-film="906"><span class="th" style="background-image:url(assets/video/film_906.jpg)"></span>Toy workshop</button>
+            <button class="film-btn" data-film="908"><span class="th" style="background-image:url(assets/video/film_908.jpg)"></span>Music room</button>
+          </div>
+          <video id="filmVideo" muted loop playsinline preload="auto" hidden></video>
+        </div>
+      </div>
+      <details class="table"><summary>Full results · CompoScene-4D (120 scenes, video input)</summary>
+        <div class="tscroll"><table>
+          <thead><tr><th>Method</th><th>Scene AABB ↑</th><th>Scene OBB ↑</th><th>Obj AABB ↑</th><th>Obj OBB ↑</th><th>PL ↓</th><th>N-CLIP ↓</th><th>Local CD ↓</th><th>Local F ↑</th><th>World CD ↓</th><th>World F ↑</th></tr></thead>
+          <tbody>
+            <tr><td>MIDI-3D (per frame)</td><td><u>0.667</u></td><td><u>0.454</u></td><td>0.151</td><td><u>0.129</u></td><td><u>1.81</u></td><td><u>1.14</u></td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+            <tr><td>SceneGen (per frame)</td><td>0.597</td><td>0.416</td><td>0.123</td><td>0.101</td><td>3.09</td><td>1.44</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+            <tr><td>SceneMaker (per frame)</td><td>0.597</td><td>0.379</td><td>0.119</td><td>0.099</td><td>3.00</td><td>1.51</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+            <tr><td>Mira-Scene (per frame)</td><td>0.618</td><td>0.410</td><td><u>0.152</u></td><td>0.125</td><td>2.59</td><td>1.66</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+            <tr><td>VIGA (per frame)</td><td>0.614</td><td>0.357</td><td>0.067</td><td>0.049</td><td>2.50</td><td>1.90</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+            <tr><td>OVOW (video)</td><td>0.446</td><td>0.327</td><td>0.115</td><td>0.098</td><td>2.90</td><td>1.53</td><td><u>0.491</u></td><td><u>0.093</u></td><td><u>0.627</u></td><td><u>0.162</u></td></tr>
+            <tr class="ours"><td>WorldSmith (video)</td><td>0.776</td><td>0.546</td><td>0.340</td><td>0.285</td><td>1.33</td><td>0.87</td><td>0.202</td><td>0.216</td><td>0.227</td><td>0.450</td></tr>
+          </tbody></table></div>
+        <p class="tnote">Scene metrics at the first, middle and last frames; character metrics over all frames. Single-image methods are run on each scored frame independently and output no animation.</p>
+      </details>
+    </article>
+
+  </div>
+</section>
+
+<!-- ============ BIBTEX ============ -->
+<section id="bibtex" class="band">
+  <div class="lights small" data-lights aria-hidden="true"></div>
+  <div class="wrap">
+    <p class="kicker">Take a souvenir</p>
+    <h2 class="h2">BibTeX</h2>
+    <div class="bib">
+      <button class="copy" id="copyBib">copy</button>
+<pre id="bibText">@article{worldsmith2026,
+  title  = {WorldSmith: Unified Agentic 3D and 4D Content Creation},
+  year   = {2026}
+}</pre>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <svg class="skyline" viewBox="0 0 1200 120" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <g class="sl-spin"><circle class="sl-line" cx="600" cy="54" r="46"/><path class="sl-line" d="M600 54L646.0 54.0M600 54L632.5 86.5M600 54L600.0 100.0M600 54L567.5 86.5M600 54L554.0 54.0M600 54L567.5 21.5M600 54L600.0 8.0M600 54L632.5 21.5"/><rect class="sl" x="642.0" y="53.0" width="8" height="8" rx="2"/><rect class="sl" x="628.5" y="85.5" width="8" height="8" rx="2"/><rect class="sl" x="596.0" y="99.0" width="8" height="8" rx="2"/><rect class="sl" x="563.5" y="85.5" width="8" height="8" rx="2"/><rect class="sl" x="550.0" y="53.0" width="8" height="8" rx="2"/><rect class="sl" x="563.5" y="20.5" width="8" height="8" rx="2"/><rect class="sl" x="596.0" y="7.0" width="8" height="8" rx="2"/><rect class="sl" x="628.5" y="20.5" width="8" height="8" rx="2"/></g>
+    <path class="sl-line" d="M600 54L572 106M600 54L628 106" style="stroke-width:5"/>
+    <path class="sl" d="M-300 120V106H1500V120Z"/>
+    <path class="sl" d="M40 106L92 50L144 106ZM90 52V30h3v4l16 5-16 5v8z"/>
+    <path class="sl" d="M196 80Q250 18 304 80ZM226 78h48v28h-48z"/>
+    <path class="sl" d="M366 106V58h4v48zM361 46h14v13h-14zM836 106V58h4v48zM831 46h14v13h-14z"/>
+    <path class="sl" d="M428 106V84h70v22zM422 86l12-16h58l12 16z"/>
+    <path class="sl" d="M700 76Q748 26 796 76ZM708 74h80v32h-80z"/><circle class="sl" cx="748" cy="38" r="7"/>
+    <path class="sl" d="M900 106L956 42L1012 106ZM954 44V22h3v4l16 5-16 5v8z"/>
+    <path class="sl" d="M1066 106V82h74v24zM1058 84l14-18h62l14 18z"/>
+    <circle class="sl-lamp" cx="368" cy="52" r="3.4"/><circle class="sl-lamp" cx="838" cy="52" r="3.4" style="animation-delay:-1.3s"/>
+    <circle class="sl-lamp" cx="250" cy="92" r="3"/><circle class="sl-lamp" cx="748" cy="90" r="3" style="animation-delay:-.7s"/>
+  </svg>
+  <div class="wrap">
+    <span>© 2026 WorldSmith authors</span>
+    <span>All renders on this page were produced by the WorldSmith agent.</span>
+  </div>
+</footer>
+
+<dialog class="lb" id="lb"><button id="lbClose">close ✕</button><img id="lbImg" alt=""></dialog>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>
