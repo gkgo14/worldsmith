@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.venv/
+venv/
+
+# Agent workspaces and outputs
+runs/
+*.blend1
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
