@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "worldsmith"
 version = "0.1.0"
-description = "WorldSmith: Unified Agentic 3D and 4D Content Creation (preview: algorithmic components and pseudocode)"
+description = "WorldSmith: Blender asset editing tools and 3D/4D research code"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "WorldSmith authors" }]
@@ -15,8 +15,11 @@ dependencies = ["numpy>=1.24"]
 [project.optional-dependencies]
 dev = ["pytest>=7"]
 
-[tool.setuptools]
-packages = ["worldsmith"]
+[project.scripts]
+worldsmith-edit = "worldsmith.asset_edit.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["worldsmith", "worldsmith.*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
