@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "worldsmith"
 version = "0.1.0"
-description = "WorldSmith: Blender asset editing tools and 3D/4D research code"
+description = "WorldSmith: Unified Agentic 3D and 4D Content Creation (preview: algorithmic components and pseudocode)"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "WorldSmith authors" }]

@@ -1,9 +1,0 @@
-{
-  "editable": ["Cube"],
-  "new_objects": ["Indicator"],
-  "operations": [
-    {"op": "set_material", "object": "Cube", "base_color": [0.08, 0.16, 0.3, 1], "roughness": 0.55},
-    {"op": "add_object", "name": "Indicator", "primitive": "uv_sphere", "location": [0, 0, 1], "scale": 0.3},
-    {"op": "set_material", "object": "Indicator", "base_color": [0.8, 0.2, 0.04, 1]}
-  ]
-}

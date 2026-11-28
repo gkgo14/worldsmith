@@ -5,23 +5,28 @@
 [Project page](https://gkgo14.github.io/worldsmith/) · Paper (coming soon) · arXiv (coming soon)
 
 > [!IMPORTANT]
-> This release includes a runnable **Blender 3D asset editor**, the numerical components of WorldSmith (Eqs. 1–4),
-> and previews of the agent loop and task harnesses. The editor takes explicit edit plans. Reproducing the paper's
-> model-driven results and benchmark numbers requires the research runtime and evaluation code.
+> **This is a preview release, not the full code.** It contains the algorithmic components of WorldSmith (Eqs. 1–4
+> and the agent's own checks, implemented in NumPy and unit-tested) and a **pseudocode-level outline** of the agent
+> loop and the five task pipelines. The model backends, benchmark loaders and evaluation code are not included, so
+> this repository **cannot reproduce the generation results or the numbers in the paper**.
+>
+> **The full implementation will be released as soon as possible.**
 
 ![WorldSmith teaser](assets/teaser.jpg)
 
 WorldSmith is one vision-language agent that writes Blender Python, renders its own result, looks at it and revises
 until it matches the goal. The same loop serves five 3D and 4D creation tasks, with no task-specific training.
 
-The repository shows how the method (Sec. 3 of the paper) is put together and lets you run the Blender operations
-used for local object and part editing. See [What is in this release](#what-is-in-this-release) for the scope of each part.
+This preview shows how the method (Sec. 3 of the paper) is put together: the shared agent loop, the five task
+harnesses and the numerical parts behind Eqs. 1–4. Only the numerical parts and the checks run on their own; the
+pipelines are outlines of the steps. See [What is in this release](#what-is-in-this-release) for the exact state of
+each part.
 
 ## The five tasks
 
 | Task | `run(...)` name | Input → output | Code |
 |---|---|---|---|
-| 3D asset editing | `edit` | mesh + instruction (+ image) → edited mesh, turn after turn | [Agent harness](worldsmith/editing.py) · [Runnable Blender editor](docs/asset_editing.md) |
+| 3D asset editing | `edit` | mesh + instruction (+ image) → edited mesh, turn after turn | [editing.py](worldsmith/editing.py) |
 | Surface emission | `emission` | mesh + base colour + thumbnail → emission map on the texture atlas | [emission.py](worldsmith/emission.py) |
 | Rig-based animation | `animate` | rigged mesh + video → keyframed bone and armature motion | [animation.py](worldsmith/animation.py) |
 | 3D scene generation | `scene3d` | one image + camera → instance-level objects on the ground plane | [scene3d.py](worldsmith/scene3d.py) |
@@ -49,19 +54,6 @@ Python 3.10 or newer. The only dependency is NumPy.
 pip install -e .            # run inside the cloned repository
 pip install -e ".[dev]"     # also installs pytest
 ```
-
-## Run the 3D asset editor
-
-Install Blender 4.2 LTS and put `blender` on `PATH` or set `BLENDER_BIN` to its executable. Inspect an asset, then
-apply a JSON plan to export an edited GLB. Add `--render` for fixed-camera before and after previews.
-
-```bash
-worldsmith-edit inspect input.glb
-worldsmith-edit apply input.glb plan.json runs/my-edit --render
-```
-
-The guide includes a self-contained example, operation parameters and the geometry checks used at delivery.
-[3D asset editing guide](docs/asset_editing.md)
 
 ## Try it
 
@@ -95,9 +87,9 @@ delivery in which a protected object moved.
 
 ## Interface of the full system
 
-This section describes the model-driven interface. `scene3d` and `scene4d` are pseudocode, and the `edit`, `emission`
-and `animate` agent outlines run against stand-in backends in the tests. The local Blender editor has its own entry
-point documented above.
+This section describes the interface the full release will use. **In this preview the pipelines do not run end to
+end**: no backends are provided, `scene3d` and `scene4d` are pseudocode, and the `edit`, `emission` and `animate`
+outlines have only been run against stand-in backends in the tests.
 
 `WorldSmith.run(task, **inputs)` is the single entry point:
 
@@ -134,7 +126,6 @@ A tool that a task does not need can be left out; it is then not offered to the 
 | Eq. 1 `linear_blend_skinning`; Eq. 2 `atlas_weights`, `fuse_views`, `emission_map`; Eq. 3 `motion_scores`; Eq. 4 `umeyama` | Runs (NumPy), tested |
 | `select_colors` (CIE76, tau_c = 15), `ground_point`, `reference_crop_box`, `fill_occluded`, `accept_completion` (IoU ≥ 0.55), `fit_to_proxy`, `first_frame_mask`, `union_crop_box`, `canonical_transform` | Runs (NumPy), tested |
 | `IssueLedger`, `EditState`, `source_preservation_gate`, `CandidatePool` (at least 4 candidates, blind A/B review) | Runs (Python), tested |
-| `worldsmith-edit` | Runs with Blender on `.blend` and `.glb` assets using explicit edit plans, with geometry checks and optional previews |
 | `AgentLoop` and the harnesses for `edit`, `emission`, `animate` | Pseudocode-level outline. Runs only with stand-in backends (see the tests and the example) |
 | `scene3d.run`, `scene4d.run` | Pseudocode. They show the order of the steps; the helpers they call are stubs, so they do not run |
 | Model backends, benchmark loaders, evaluation code | Not included; coming with the full release |
@@ -145,8 +136,8 @@ Places where the outline stops short of a full implementation:
   `fuse_views`, then `emission_map`, then export.
 - **Animation**: the delivery check (every frame compared in Blender and in the exported GLB) always reports a pass
   in this preview, and the candidate previews for the reviewer are placeholders.
-- **Editing agent**: the preview harness reads source and delivered vertices from the task inputs. The local editor
-  measures both assets in Blender and takes explicit object names or triangle selections for its operations.
+- **Editing**: the delivery gate reads source and delivered vertices from the task inputs. Face localisation,
+  deletion, repair and retexturing are written by the agent in Blender Python and are not reproduced here.
 - **3D scene**: the image and Blender helpers at the end of `scene3d.py` are stubs.
 - **4D scene**: `scene4d.run` expects prepared inputs (`first_frame`, `frames`, `frame1_labels`, `object_names`,
   `character_vertices_world`, `camera_to_world`) in place of the raw video.
@@ -159,8 +150,8 @@ All of these will be replaced by the working implementation in the full release.
 pytest
 ```
 
-The tests cover the four equations, geometric helpers, the editing ledger and gate, the candidate pool and the agent
-loop driven by a scripted model.
+45 tests cover the four equations, the geometric helpers, the editing ledger and gate, the candidate pool, and the
+agent loop driven by a scripted model.
 
 ## Repository layout
 
@@ -169,12 +160,11 @@ worldsmith/
   agent.py      shared loop and the unified entry WorldSmith.run(task, **inputs)
   tools.py      interfaces of the tools the agent calls
   editing.py    Sec. 3.1  3D asset editing
-  asset_edit/   runnable local 3D asset editor
   animation.py  Sec. 3.2  rig-based animation   (Eq. 1)
   emission.py   Sec. 3.3  surface emission      (Eq. 2)
   scene3d.py    Sec. 3.4  3D scene generation
   scene4d.py    Sec. 3.5  4D scene generation   (Eqs. 3-4)
-examples/       sample asset edit plan and mock_edit_run.py
+examples/       mock_edit_run.py
 tests/          pytest suite
 assets/         figures used in this README
 docs/           source of the project page (served by GitHub Pages)
